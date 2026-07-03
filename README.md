@@ -26,10 +26,4 @@ Aplicación web interactiva para el aprendizaje de métodos numéricos. Incluye:
 - MathJax para fórmulas matemáticas
 - Modo oscuro/claro con persistencia
 
-## Demo
 
-👉 [Ver demo en GitHub Pages](https://tu-usuario.github.io/metodos-numericos/)
-
----
-
-Hecho con ❤️ para el curso de Métodos Numéricos.
