@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teoría - Métodos Numéricos</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- MathJax -->
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">Métodos <span>Numéricos</span></div>
+        <button class="theme-toggle" id="themeToggle">🌙 Modo oscuro</button>
+    </header>
+
+    <main class="content">
+        <div class="content-header">
+            <a href="index.html" class="btn-back">← Volver al inicio</a>
+            <span class="content-title">📖 Teoría</span>
+        </div>
+
+        <div class="theory-grid" id="theoryGrid"></div>
+
+        <!-- Detalle de teoría (se muestra al hacer clic en una tarjeta) -->
+        <div class="theory-detail" id="theoryDetail">
+            <div id="theoryDetailContent"></div>
+            <div class="detail-actions">
+                <button class="btn-close-detail" id="closeTheoryDetail">Cerrar</button>
+                <a href="calculadora.html" class="btn-to-calc-detail" id="toCalcFromDetail">🧮 Ir a calculadora</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="main.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        // Cargar teoría
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTheoryGrid();
+        });
+    </script>
+</body>
+</html>
