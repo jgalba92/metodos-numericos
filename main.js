@@ -85,6 +85,40 @@ function deepMerge(target, source) {
 }
 
 // ================================================================
+//  BUILDFN SAFE (para evaluar funciones matemáticas)
+// ================================================================
+function parseFunc(raw) {
+    if (!raw || !raw.trim()) return null;
+    let s = raw.trim();
+    s = s.replace(/\^/g, '**');
+    s = s.replace(/\bln\b/g, 'Math.log');
+    s = s.replace(/\blog\b/g, 'Math.log10');
+    s = s.replace(/\bexp\b/g, 'Math.exp');
+    s = s.replace(/\bsqrt\b/g, 'Math.sqrt');
+    s = s.replace(/\bsin\b/g, 'Math.sin');
+    s = s.replace(/\bcos\b/g, 'Math.cos');
+    s = s.replace(/\btan\b/g, 'Math.tan');
+    s = s.replace(/\babs\b/g, 'Math.abs');
+    s = s.replace(/\bpi\b/gi, 'Math.PI');
+    s = s.replace(/\be\b(?![+-]?\d)/g, 'Math.E');
+    return s;
+}
+
+function buildFn(raw) {
+    const parsed = parseFunc(raw);
+    if (!parsed) return null;
+    try {
+        return new Function('x', `"use strict"; return (${parsed});`);
+    } catch(e) { return null; }
+}
+
+function buildFnSafe(raw) {
+    const f = buildFn(raw);
+    if (!f) return null;
+    return (x) => { try { const v = f(x); return isFinite(v) ? v : NaN; } catch(e){ return NaN; } };
+}
+
+// ================================================================
 //  TOOLBAR DE SÍMBOLOS Y PRESETS
 // ================================================================
 const SYMBOLS = ['+', '-', '*', '/', '(', ')', '^', '.', ','];
@@ -176,6 +210,59 @@ function updatePreview(inputId) {
 }
 
 // ================================================================
+//  RENDER TEORÍA
+// ================================================================
+function renderTheoryGrid() {
+    const grid = document.getElementById('theoryGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    // Asegurar que topics existe
+    if (typeof topics === 'undefined' || !topics.length) {
+        grid.innerHTML = '<p style="color:var(--red);">Error: No se cargaron los temas. Revisa data.js.</p>';
+        return;
+    }
+    topics.forEach(topic => {
+        const card = document.createElement('div');
+        card.className = 'theory-card';
+        card.innerHTML = `
+            <h3>${topic.icon} ${topic.title}</h3>
+            <p>${topic.description}</p>
+            <div class="card-actions">
+                <button class="btn-theory-detail" data-id="${topic.id}">Ver detalles</button>
+                <a href="calculadora.html?calc=${topic.id}" class="btn-calc-link">🧮 Ir a calculadora</a>
+            </div>
+        `;
+        card.querySelector('.btn-theory-detail').addEventListener('click', function() {
+            openTheoryDetail(topic.id);
+        });
+        grid.appendChild(card);
+    });
+}
+
+function openTheoryDetail(id) {
+    const topic = topics.find(t => t.id === id);
+    if (!topic) return;
+    const detail = document.getElementById('theoryDetail');
+    const content = document.getElementById('theoryDetailContent');
+    content.innerHTML = topic.theory;
+    document.getElementById('toCalcFromDetail').href = `calculadora.html?calc=${topic.id}`;
+    detail.classList.add('open');
+    detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(() => {});
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.getElementById('closeTheoryDetail');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            document.getElementById('theoryDetail').classList.remove('open');
+        });
+    }
+});
+
+// ================================================================
 //  RENDER CALCULADORA
 // ================================================================
 let currentCalcId = null;
@@ -184,6 +271,10 @@ function renderCalcSelector() {
     const selector = document.getElementById('calcSelector');
     if (!selector) return;
     selector.innerHTML = '';
+    if (typeof topics === 'undefined' || !topics.length) {
+        selector.innerHTML = '<p style="color:var(--red);">Error: No se cargaron los temas. Revisa data.js.</p>';
+        return;
+    }
     topics.forEach(topic => {
         const item = document.createElement('div');
         item.className = 'calc-selector-item';
@@ -245,7 +336,6 @@ function selectCalculator(id) {
     funcFields.forEach(f => {
         const tbId = `toolbar-${f.id}`;
         buildToolbar(f.id, tbId);
-        // Actualizar preview al escribir
         document.getElementById(f.id).addEventListener('input', () => updatePreview(f.id));
         updatePreview(f.id);
     });
@@ -262,7 +352,6 @@ function selectCalculator(id) {
         chartContainer.innerHTML = '';
         try {
             const result = topic.calculate(values);
-            // Si el resultado es un objeto con html y charts
             if (typeof result === 'object' && result.html) {
                 resultBox.innerHTML = result.html;
                 resultBox.classList.add('visible');
@@ -275,7 +364,6 @@ function selectCalculator(id) {
                         div.style.height = '200px';
                         div.innerHTML = `<div class="chart-title">${chartDef.title || ''}</div><canvas id="${canvasId}"></canvas>`;
                         chartContainer.appendChild(div);
-                        // Dibujar gráfico después de renderizar el DOM
                         setTimeout(() => {
                             if (chartDef.type === 'line') {
                                 makeLineChart(canvasId, chartDef.labels, chartDef.datasets, chartDef.options || {});
@@ -288,12 +376,10 @@ function selectCalculator(id) {
                     chartContainer.style.display = 'none';
                 }
             } else {
-                // Si devuelve solo HTML (compatibilidad)
                 resultBox.innerHTML = result;
                 resultBox.classList.add('visible');
                 chartContainer.style.display = 'none';
             }
-            // Re-renderizar MathJax
             if (window.MathJax && MathJax.typesetPromise) {
                 MathJax.typesetPromise().catch(() => {});
             }
@@ -316,7 +402,21 @@ function selectCalculator(id) {
         document.getElementById('calcResult').innerHTML = '';
         document.getElementById('chartContainer').innerHTML = '';
         document.getElementById('chartContainer').style.display = 'none';
-        // Actualizar previews
         topic.calcFields.filter(f => f.type === 'text' && f.id.includes('func')).forEach(f => updatePreview(f.id));
     });
 }
+
+// Inicializar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Si estamos en teoria.html, renderTheoryGrid se llama desde su propio script
+    // Si estamos en calculadora.html, renderCalcSelector se llama desde su propio script
+    // Esta función se ejecutará en ambos casos, pero no daña.
+    if (document.getElementById('calcSelector')) {
+        renderCalcSelector();
+        const params = new URLSearchParams(window.location.search);
+        const calcId = params.get('calc');
+        if (calcId) {
+            setTimeout(() => selectCalculator(calcId), 100);
+        }
+    }
+});
