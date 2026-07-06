@@ -1,7 +1,7 @@
 // theme.js
 (function() {
     const toggle = document.getElementById('themeToggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
+    const currentTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', currentTheme);
     toggle.textContent = currentTheme === 'dark' ? '☀️ Modo claro' : '🌙 Modo oscuro';
 

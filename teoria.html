@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teoría - Métodos Numéricos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- MathJax -->
     <script>
@@ -12,7 +15,7 @@
             svg: { fontCache: 'global' }
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
 </head>
 <body>
     <header class="app-header">
@@ -38,14 +41,10 @@
         </div>
     </main>
 
+    <script src="nm-core.js"></script>
     <script src="data.js"></script>
+    <script src="theory.js"></script>
     <script src="main.js"></script>
     <script src="theme.js"></script>
-    <script>
-        // Cargar teoría
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTheoryGrid();
-        });
-    </script>
 </body>
 </html>
